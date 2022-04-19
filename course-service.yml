@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: course-service-app
+  labels:
+    app: course-service-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app : course-service-app
+  template:
+    metadata:
+      labels:
+        app: course-service-app
+    spec:
+      containers:
+      - name: course-service-app
+        image: roopikasrinivas/course-service:0.0.1-SNAPSHOT
+        imagePullPolicy: Always
+        ports:
+          - containerPort: 9002
+
+---
+
+kind: Service
+apiVersion: v1
+metadata:
+  name:  course-service-svc
+spec:
+  selector:
+    app:  course-service-app
+  ports:
+  - port:  80
+    targetPort:  9003

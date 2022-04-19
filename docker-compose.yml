@@ -10,6 +10,7 @@ services:
       - test-network
 
   department-service :
+    container_name: department-service
     image: department-service
     environment:
       - JAVA_OPTS=
