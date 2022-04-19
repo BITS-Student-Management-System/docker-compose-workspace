@@ -1,4 +1,4 @@
-version: "1"
+version: "3"
 
 services:
 
@@ -88,6 +88,7 @@ services:
       ACTIVEMQ_JMX_LOGIN: admin
       ACTIVEMQ_JMX_PASSWORD: admin
       ACTIVEMQ_STATIC_QUEUES: department-queue
+
 
 networks:
   test-network:
