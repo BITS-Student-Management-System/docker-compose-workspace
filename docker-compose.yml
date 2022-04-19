@@ -1,112 +1,93 @@
-version: "3"
-volumes:
-  prometheus_data: {}
-  
+version: "1"
+
 services:
 
-  techefx-eureka-namng-service:
-    image: techefx-eureka-naming-server
+  service-registry:
+    image: service-registry
     ports:
       - "8761:8761"
     networks:
       - test-network
 
-
-  techefx-product-stock-service:
-    image: techefx-product-stock-service
+  department-service :
+    image: department-service
     environment:
       - JAVA_OPTS=
-        -DEUREKA_SERVER=http://techefx-eureka-namng-service:8761/eureka
-        -DZIPKIN_SERVER=http://zipkin:9411/
+        -DEUREKA_SERVER=http://service-registry:8761/eureka
     ports:
-      - "8800:8800"
-    #    links:
-    #      - zipkin
+      - "9001:9001"
     depends_on:
-      - techefx-eureka-namng-service
-    #      - zipkin
+      - service-registry
     networks:
       - test-network
 
-
-  techefx-product-enquiry-service:
-    image: techefx-product-enquiry-service
+  course-service :
+    image: course-service
     environment:
       - JAVA_OPTS=
-        -DEUREKA_SERVER=http://techefx-eureka-namng-service:8761/eureka
-        -DZIPKIN_SERVER=http://zipkin:9411/
+        -DEUREKA_SERVER=http://service-registry:8761/eureka
     ports:
-      - "8700:8700"
-    #   links:
-    #     - zipkin
+      - "9003:9003"
     depends_on:
-      - techefx-product-stock-service
-    #     - zipkin
+      - department-service
     networks:
       - test-network
 
-
-  techefx-spring-cloud-api-gateway-service:
-    image: techefx-spring-cloud-api-gateway-service
+  student-service:
+    image: student-service
     environment:
       - JAVA_OPTS=
-        -DEUREKA_SERVER=http://techefx-eureka-namng-service:8761/eureka
-        -DZIPKIN_SERVER=http://zipkin:9411/
- #       -DENQUIRY_SERVICE=http://techefx-product-enquiry-service:9700/
+        -DEUREKA_SERVER=http://service-registry:8761/eureka
     ports:
-      - "8900:8900"
-    #   links:
-    #     - zipkin
+      - "9002:9002"
     depends_on:
-      - techefx-eureka-namng-service
-      - techefx-product-enquiry-service
-      - techefx-product-stock-service
-    #      - zipkin
+      - course-service
     networks:
       - test-network
 
-
-  prometheus:
-    image: prom/prometheus
-    volumes:
-      - ./config/:/etc/prometheus
-      - ./data/prometheus:/data
-    command:
-      - '--config.file=/etc/prometheus/prometheus.yml'
-      - '--storage.tsdb.path=/prometheus'
-      - '--storage.tsdb.retention=31d'
-      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
-      - '--web.console.templates=/usr/share/prometheus/consoles'
-    ports:
-      - "9090:9090"
-    depends_on:
-      - techefx-product-stock-service
-    networks:
-      - test-network
-
-
-  grafana:
-    image: grafana/grafana
-    ports:
-      - "3000:3000"
-    depends_on:
-      - prometheus
-    networks:
-      - test-network
-
-
-  zipkin:
-    image: openzipkin/zipkin
+  cloud-gateway:
+    image: cloud-gateway
     environment:
-      - STORAGE_TYPE=mem
+      - JAVA_OPTS=
+        -DEUREKA_SERVER=http://service-registry:8761/eureka
     ports:
-      - "9411:9411"
+      - "9191:9191"
     depends_on:
-      - techefx-eureka-namng-service
+      - service-registry
+      - department-service
+      - course-service
+      - student-service
     networks:
       - test-network
 
-
+  activemq:
+    image: webcenter/activemq
+    ports:
+      # mqtt
+      - "1883:1883"
+      # amqp
+      - "5672:5672"
+      # ui
+      - "8161:8161"
+      # stomp
+      - "61613:61613"
+      # ws
+      - "61614:61614"
+      # jms
+      - "61616:61616"
+    networks:
+      - test-network
+    environment:
+      ACTIVEMQ_REMOVE_DEFAULT_ACCOUNT: "true"
+      ACTIVEMQ_ADMIN_LOGIN: admin
+      ACTIVEMQ_ADMIN_PASSWORD: admin
+      ACTIVEMQ_WRITE_LOGIN: admin
+      ACTIVEMQ_WRITE_PASSWORD: admin
+      ACTIVEMQ_READ_LOGIN: admin
+      ACTIVEMQ_READ_PASSWORD: admin
+      ACTIVEMQ_JMX_LOGIN: admin
+      ACTIVEMQ_JMX_PASSWORD: admin
+      ACTIVEMQ_STATIC_QUEUES: department-queue
 
 networks:
   test-network:
