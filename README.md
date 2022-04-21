@@ -1,3 +1,3 @@
-# docker-compose-workspace
+# minikube-workspace
 
-Repo for Docker Compose files
+Repo for minikube deployment files
