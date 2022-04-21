@@ -19,7 +19,7 @@ spec:
         image: roopikasrinivas/course-service:0.0.1-SNAPSHOT
         imagePullPolicy: Always
         ports:
-          - containerPort: 9002
+          - containerPort: 9003
 
 ---
 
